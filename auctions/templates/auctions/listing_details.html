@@ -1,0 +1,100 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<h2>Listing: {{ listing.title }}</h2>
+
+<div class="card bg-light p-2 my-3">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="listing-image-container">
+                <img class="card-img listing-image" src="{{ listing.image }}" alt="{{ listing.description }}">
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card-body">
+                {% if user.is_authenticated and not user == listing.user %}
+                <form class="my-1" action="{% url 'watchlist' %}" method="post">{% csrf_token %}
+                    <input type="hidden" name="listing_id" value="{{ listing.id }}">
+                    {% if in_watchlist %}
+                    <input type="hidden" name="remove_from_listing" value="remove">
+                    <input type="submit" class="btn btn-sm btn-danger" value="Remove from watchlist">
+                    {% else %}
+                    <input type="submit" class="btn btn-sm btn-primary" value="Add to watchlist">
+                    {% endif %}
+                </form>
+                {% endif %}
+    
+                <h3 class="card-title my-0">{{ listing.title }}</h3>
+                <p class="card-text">Category: <a href="{% url 'category' listing.category %}">{{ listing.category }}</a></p><hr>
+                <h4 class="card-subtitle mb-1 text-muted">${{ listing.price | floatformat:2 }}</h4>
+                <p class="card-text">{{ listing.description }}</p>
+                <p class="card-text"><small class="text-muted">Created {{ listing.date_added | date:"D d M Y" }},
+                        {{ listing.date_added | time }} by {{ listing.user }}</small></p>
+    
+    
+                {% if current_bid %}
+                <p>{{ bids }} bid(s) so far.
+                    {% if user == current_bid.user %}
+                    <strong>Your bid is the current bid.</strong>
+                    {% endif %}
+                </p>
+    
+                <p>Current bid: <strong>{{ current_bid.amount | floatformat:2 }}</strong></p>
+    
+                {% endif%}
+    
+                {% if not listing.is_active %}
+                <span class="alert alert-danger w-25">Listing is closed.</span>
+                {% if user == current_bid.user %}
+                <span class="alert alert-success">You Won this listing.</span>
+                {% endif%}
+                {% endif%}
+    
+                {% if message %}
+                <p class="alert alert-danger">{{ message }}</p>
+                {% endif %}
+    
+                {% if user.is_authenticated and listing.is_active%}
+                {% if user == listing.user %}
+                <form method="POST">{% csrf_token %}
+                    <input type="hidden" name="listing_id" value="{{ listing.id }}">
+                    <input type="submit" class="btn btn-danger" name="close" value="Close">
+                </form>
+                {% else %}
+                <form method="POST">{% csrf_token %}
+                    <div class="form-group">
+                        <input class="form-control" type="text" name="bid" id="bid" placeholder="Bid" required>
+                    </div>
+                    <input type="hidden" name="listing_id" value="{{ listing.id }}">
+                    <input type="submit" class="btn btn-primary" value="Place Bid">
+                </form>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card bg-light p-2 my-3">
+    <h3 class="card-title">Comments</h3>
+    {% if user.is_authenticated %}
+    <form method="POST" action="{% url 'comment' listing.id %}">{% csrf_token %}
+        <textarea class="form-control w-50" name="content" id="content"></textarea>
+        <input class="btn-primary" type="submit" value="Post Comment">
+    </form>
+    {% else %}
+        <p>Log in to comment.</p>
+    {% endif %}
+
+    {% for comment in comments %}
+         <div class="alert alert-info my-1 w-50">
+             <p class="card-text"><small class="text-muted">Posted {{ comment.date_added | date:"D d M Y" }},
+                 {{ comment.date_added | time }} by {{ comment.user }}</small></p>
+            <p class="card-text">{{ comment.content }}</p>
+        </div>
+            {% empty %}
+        <p>No Comments.</p>
+    {% endfor %}
+</div>
+
+
+{% endblock %}
