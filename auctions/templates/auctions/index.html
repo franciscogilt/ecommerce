@@ -4,26 +4,7 @@
 <h2>Active Listings</h2>
 
 {% for listing in listings %}
-<div class="card bg-light p-2 my-3">
-    <div class="row">
-        <div class="col-lg-4">
-            <div class="listing-image-container">
-                <img class="card-img listing-image" src="{{ listing.image }}" alt="{{ listing.description }}">
-            </div>
-        </div>
-        <div class="col-lg-8">
-            <div class="card-body">
-                <h3 class="card-title my-0">{{ listing.title }}</h3>
-                <p class="card-text">Category: <a href="{% url 'category' listing.category %}">{{ listing.category }}</a></p><hr>
-                <h4 class="card-subtitle mb-1 text-muted">${{ listing.price | floatformat:2 }}</h4>
-                <p class="card-text">{{ listing.description }}</p>
-                <p class="card-text"><small class="text-muted">Created {{ listing.date_added | date:"D d M Y" }},
-                        {{ listing.date_added | time }} by {{ listing.user }}</small></p>
-                <a href="{% url 'listing_details' listing.id%}" class="btn btn-primary">View</a>
-            </div>
-        </div>
-    </div>
-</div>
+    {% include 'auctions/card.html' %}
 {% endfor %}
 
 {% endblock %}
